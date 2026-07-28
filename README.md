@@ -82,6 +82,29 @@ The isolated test suite replaces curl with a local mock. It makes no network req
 
 It covers successful Markdown and JSON conversion, missing credentials, malformed page ranges, invalid PDF content, symlink rejection, HTTP failure, output preservation, temporary-file cleanup, and log redaction.
 
+## n8n workflow
+
+[`examples/n8n-brainiall-pdf-to-markdown.json`](examples/n8n-brainiall-pdf-to-markdown.json) is an importable workflow that exposes a password-protected PDF upload form, sends the PDF to Brainiall as multipart form data, and returns the result in the binary property `markdown`.
+
+Use **n8n 2.27.0 or newer**. That release includes n8n's fix for preserving filenames in multipart binary uploads.
+
+1. Download the [raw workflow JSON](https://raw.githubusercontent.com/fasuizu-br/brainiall-pdf-to-markdown-action/main/examples/n8n-brainiall-pdf-to-markdown.json).
+2. In n8n, choose **Import from File** and select the JSON.
+3. Open **Upload PDF** and select a **Basic Auth** credential. This prevents anonymous use of the metered endpoint.
+4. Open **Convert PDF to Markdown** and select a **Header Auth** credential with:
+   - header name: `Authorization`
+   - header value: `Bearer YOUR_BRAINIALL_API_KEY`, replacing the placeholder only inside the credential
+5. Run the trigger's test form with one PDF. A successful execution exposes the generated `.md` content in the binary property `markdown`.
+6. Activate the workflow only after both credentials are configured. Use the production form URL for subsequent uploads.
+
+No credential, credential ID, or API key is embedded in the JSON. The upload form intentionally fails closed until its Basic Auth credential is selected, and the API call returns `401` without a valid Brainiall key.
+
+Validate the checked-in template with Node.js:
+
+```bash
+node scripts/validate-n8n-workflow.mjs
+```
+
 ## License
 
 [MIT](LICENSE) © 2026 Brainiall

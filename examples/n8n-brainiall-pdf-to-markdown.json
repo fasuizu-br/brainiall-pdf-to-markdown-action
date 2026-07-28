@@ -1,0 +1,115 @@
+{
+  "name": "Brainiall: PDF to Markdown upload form",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "formTitle": "Convert PDF to Markdown",
+        "formDescription": "Upload one PDF. Brainiall converts the complete document to Markdown for documentation, search, RAG, and LLM pipelines.",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "pdf",
+              "fieldLabel": "PDF document",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "acceptFileTypes": ".pdf",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "onReceived",
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Convert PDF"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -260,
+        120
+      ],
+      "id": "2ec1da2f-6d54-44c6-bda3-4b86faf177ef",
+      "name": "Upload PDF",
+      "webhookId": "455ff32b-e6e1-45ac-b116-4b5e1614fcc6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.brainiall.com/v1/document/pdf-to-markdown/file",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "pdf",
+              "inputDataFieldName": "pdf"
+            },
+            {
+              "name": "output_format",
+              "value": "markdown"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "markdown"
+            }
+          },
+          "timeout": 600000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        20,
+        120
+      ],
+      "id": "7c103103-cef6-4d49-b1ed-54d4460ed117",
+      "name": "Convert PDF to Markdown"
+    },
+    {
+      "parameters": {
+        "content": "## Configure two credentials before the first run\n\n1. In **Upload PDF**, select an n8n **Basic Auth** credential. This protects the upload form from anonymous use.\n2. In **Convert PDF to Markdown**, select an n8n **Header Auth** credential. Set its header name to `Authorization` and its value to `Bearer YOUR_BRAINIALL_API_KEY`. Never paste a real key into workflow fields.\n3. Create a Brainiall key with welcome credits: https://app.brainiall.com?utm_source=github&utm_medium=n8n_workflow&utm_campaign=pdf_to_markdown\n4. Test the form, then activate the workflow to expose its production form URL.\n\nA successful execution stores the Markdown file in the binary property `markdown`. This workflow requires n8n 2.27.0 or newer.",
+        "height": 440,
+        "width": 500,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        -440
+      ],
+      "id": "1334f129-74e1-4be9-b24c-9bb87b7996db",
+      "name": "Setup instructions"
+    }
+  ],
+  "connections": {
+    "Upload PDF": {
+      "main": [
+        [
+          {
+            "node": "Convert PDF to Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
