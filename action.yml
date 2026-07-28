@@ -1,0 +1,46 @@
+name: 'Brainiall PDF to Markdown'
+description: 'Convert a PDF file to clean Markdown for documentation, RAG, and LLM pipelines.'
+author: 'BRAINIALL Team'
+
+inputs:
+  pdf_path:
+    description: 'Path to the PDF inside GITHUB_WORKSPACE.'
+    required: true
+  api_key:
+    description: 'Brainiall API key. Pass it from GitHub Actions secrets; never hard-code it.'
+    required: true
+  output_path:
+    description: 'Optional output path inside GITHUB_WORKSPACE. Its parent directory must already exist.'
+    required: false
+    default: ''
+  page_range:
+    description: 'Optional page or inclusive page range, for example 3 or 1-10.'
+    required: false
+    default: ''
+  output_format:
+    description: 'Response format: markdown (default) or json.'
+    required: false
+    default: 'markdown'
+
+outputs:
+  output_path:
+    description: 'Absolute path of the generated Markdown or JSON file.'
+    value: ${{ steps.convert.outputs.output_path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - id: convert
+      name: Convert PDF with Brainiall
+      shell: bash
+      env:
+        BRAINIALL_PDF_PATH: ${{ inputs.pdf_path }}
+        BRAINIALL_API_KEY: ${{ inputs.api_key }}
+        BRAINIALL_OUTPUT_PATH: ${{ inputs.output_path }}
+        BRAINIALL_PAGE_RANGE: ${{ inputs.page_range }}
+        BRAINIALL_OUTPUT_FORMAT: ${{ inputs.output_format }}
+      run: '"${GITHUB_ACTION_PATH}/scripts/convert.sh"'
+
+branding:
+  icon: 'file-text'
+  color: 'blue'
