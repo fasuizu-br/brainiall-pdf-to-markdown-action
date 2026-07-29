@@ -1,0 +1,57 @@
+name: Convert a long contract in bounded page ranges
+
+on:
+  workflow_dispatch:
+    inputs:
+      pdf_path:
+        description: PDF path in this repository
+        required: true
+        default: docs/contract.pdf
+
+permissions:
+  contents: read
+
+jobs:
+  convert-range:
+    name: Convert pages ${{ matrix.page_range }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        # Edit these inclusive ranges for the document before starting the run.
+        page_range: ["1-100", "101-200", "201-300", "301-400"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Validate the selected PDF
+        env:
+          PDF_PATH: ${{ inputs.pdf_path }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$PDF_PATH" ]] || {
+            echo "PDF not found: $PDF_PATH" >&2
+            exit 1
+          }
+
+      - name: Prepare the bounded output path
+        shell: bash
+        run: mkdir -p build/contract-ranges
+
+      - name: Convert this page range
+        id: convert
+        uses: fasuizu-br/brainiall-pdf-to-markdown-action@v1.1.0
+        with:
+          pdf_path: ${{ inputs.pdf_path }}
+          api_key: ${{ secrets.BRAINIALL_API_KEY }}
+          output_path: build/contract-ranges/pages-${{ matrix.page_range }}.md
+          page_range: ${{ matrix.page_range }}
+          output_format: markdown
+
+      - name: Upload this range without silently merging page boundaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-markdown-${{ matrix.page_range }}
+          path: ${{ steps.convert.outputs.output_path }}
+          if-no-files-found: error

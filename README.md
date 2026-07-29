@@ -28,7 +28,7 @@ jobs:
 
       - name: Convert PDF to Markdown
         id: pdf
-        uses: fasuizu-br/brainiall-pdf-to-markdown-action@v1.0.0
+        uses: fasuizu-br/brainiall-pdf-to-markdown-action@v1.1.0
         with:
           pdf_path: docs/manual.pdf
           api_key: ${{ secrets.BRAINIALL_API_KEY }}
@@ -71,6 +71,22 @@ The parent directory of `output_path` must already exist. If necessary, create i
 - The action does not retry the POST request, avoiding duplicate processing or metered usage after an ambiguous failure.
 
 The conversion uses an external, metered Brainiall service. Review current pricing and data-handling terms before processing sensitive documents. Do not put an API key directly in workflow YAML, repository variables, artifacts, or logs.
+
+## Long contracts in bounded ranges
+
+The example [`convert-long-contract-in-ranges.yml`](examples/convert-long-contract-in-ranges.yml)
+converts four explicit 100-page ranges one at a time and uploads each Markdown
+range as a separate artifact. It deliberately does not concatenate the files or
+claim that headings, tables, clauses, or page boundaries remain continuous
+between ranges; those checks belong to the caller's document pipeline.
+
+This pattern responds to an observed operational problem in a public
+[LiteParse issue about 379–1,668-page legal and construction contracts](https://github.com/run-llama/liteparse/issues/315),
+where 100-page windows stalled or drifted. That report is evidence of the job to
+be done, not a benchmark against Brainiall. Run a non-sensitive, authorized
+fixture first, review every range, and edit the matrix to the actual page count.
+Each range is a separate hosted, metered request; `max-parallel: 1` limits
+concurrency but does not make the calls free.
 
 ## Local tests
 
